@@ -17,6 +17,7 @@ jobs:
         with:
           repository: propeller-commerce/propeller-sdet-task-petar-cvetanoski
           path: api
+          token: ${{ secrets.API_REPO_TOKEN }}
 
       - name: Start API with Docker Compose
         working-directory: api
