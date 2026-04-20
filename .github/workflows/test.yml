@@ -1,0 +1,57 @@
+name: Integration Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout test repo
+        uses: actions/checkout@v4
+
+      - name: Checkout API repo
+        uses: actions/checkout@v4
+        with:
+          repository: propeller-commerce/propeller-sdet-task-petar-cvetanoski
+          path: api
+
+      - name: Start API with Docker Compose
+        working-directory: api
+        run: docker-compose up -d --build
+
+      - name: Seed the database
+        working-directory: api
+        run: |
+          sleep 10
+          docker-compose run --rm seed
+
+      - name: Wait for API to be ready
+        run: |
+          for i in {1..20}; do
+            curl -sf -X POST http://localhost:3000/graphql \
+              -H "Content-Type: application/json" \
+              -H "x-tenant-id: tenant-a" \
+              -d '{"query":"{ products { id } }"}' && break
+            echo "Waiting for API... attempt $i"
+            sleep 3
+          done
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Teardown
+        if: always()
+        working-directory: api
+        run: docker-compose down -v

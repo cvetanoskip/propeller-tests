@@ -1,0 +1,17 @@
+{
+  "name": "propeller-tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
+  }
+}
