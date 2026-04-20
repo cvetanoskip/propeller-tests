@@ -18,27 +18,32 @@ jobs:
           repository: propeller-commerce/propeller-sdet-task-petar-cvetanoski
           path: api
           token: ${{ secrets.API_REPO_TOKEN }}
-
+          ref: fix/intentional-bugs
       - name: Start API with Docker Compose
         working-directory: api
         run: docker compose up -d --build
 
-      - name: Seed the database
-        working-directory: api
-        run: |
-          sleep 10
-          docker compose run --rm seed
-
       - name: Wait for API to be ready
         run: |
-          for i in {1..20}; do
+          echo "Waiting for API..."
+          for i in {1..30}; do
             curl -sf -X POST http://localhost:3000/graphql \
               -H "Content-Type: application/json" \
               -H "x-tenant-id: tenant-a" \
-              -d '{"query":"{ products { id } }"}' && break
-            echo "Waiting for API... attempt $i"
-            sleep 3
+              -d '{"query":"{ products { id } }"}' \
+              && echo "API is ready!" && exit 0
+            echo "Attempt $i failed, retrying in 5s..."
+            sleep 5
           done
+          echo "API never became ready"
+          exit 1
+
+      - name: Seed the database
+        working-directory: api
+        run: docker compose run --rm seed
+
+      - name: Wait after seed
+        run: sleep 5
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
