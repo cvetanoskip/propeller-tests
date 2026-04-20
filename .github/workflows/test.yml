@@ -21,13 +21,13 @@ jobs:
 
       - name: Start API with Docker Compose
         working-directory: api
-        run: docker-compose up -d --build
+        run: docker compose up -d --build
 
       - name: Seed the database
         working-directory: api
         run: |
           sleep 10
-          docker-compose run --rm seed
+          docker compose run --rm seed
 
       - name: Wait for API to be ready
         run: |
@@ -55,4 +55,4 @@ jobs:
       - name: Teardown
         if: always()
         working-directory: api
-        run: docker-compose down -v
+        run: docker compose down -v
